@@ -57,8 +57,8 @@
             (if (equal ret result)
                 "OK"
                 "NG")
-            result
-            source)))
+            source
+            ret)))
 
 (defun test ()
   (try 47 "5+6*7")

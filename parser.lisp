@@ -92,22 +92,31 @@
           (nth 1 token))
         (error "数ではありません~%"))))
 
-(defun term (anker)
+(defun primary (anker)
   (if (consume anker #\()
       (prog1
           (expr anker)
         (expect anker #\)))
       (make-node :kind 'ND_NUM :val (expect-number anker))))
 
+(defun unary (anker)
+  (cond
+    ((consume anker #\+)
+     (primary anker))
+    ((consume anker #\-)
+     (make-node :kind 'ND_SUB :lhs (make-node :kind 'ND_NUM :val 0) :rhs (primary anker)))
+    (t
+     (primary anker))))
+
 (defun mul (anker &optional node)
   (let ((node (if node
                   node
-                  (term anker))))
+                  (unary anker))))
     (cond
       ((consume anker #\*)
-       (mul anker (make-node :kind 'ND_MUL :lhs node :rhs (term anker))))
+       (mul anker (make-node :kind 'ND_MUL :lhs node :rhs (unary anker))))
       ((consume anker #\/)
-       (mul anker (make-node :kind 'ND_DIV :lhs node :rhs (term anker))))
+       (mul anker (make-node :kind 'ND_DIV :lhs node :rhs (unary anker))))
       (t
        node))))
 
